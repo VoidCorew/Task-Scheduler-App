@@ -6,10 +6,12 @@
 #include "utils.h"
 
 int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
-                      _In_ wchar_t *command_line, _In_ int show_command) {
+                      _In_ wchar_t *command_line, _In_ int show_command)
+{
   // Attach to console when present (e.g., 'flutter run') or create a
   // new console when running with a debugger.
-  if (!::AttachConsole(ATTACH_PARENT_PROCESS) && ::IsDebuggerPresent()) {
+  if (!::AttachConsole(ATTACH_PARENT_PROCESS) && ::IsDebuggerPresent())
+  {
     CreateAndAttachConsole();
   }
 
@@ -26,20 +28,22 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
 
   FlutterWindow window(project);
 
-  const int windowWidth = 800;
-  const int windowHeight = 600;
+  const int windowWidth = 500;
+  const int windowHeight = 800;
 
   Win32Window::Point origin(10, 10);
-  
+
   Win32Window::Size size(windowWidth, windowHeight);
 
-  if (!window.Create(L"Task Scheduler", origin, size)) {
+  if (!window.Create(L"Task Scheduler", origin, size))
+  {
     return EXIT_FAILURE;
   }
   window.SetQuitOnClose(true);
 
   ::MSG msg;
-  while (::GetMessage(&msg, nullptr, 0, 0)) {
+  while (::GetMessage(&msg, nullptr, 0, 0))
+  {
     ::TranslateMessage(&msg);
     ::DispatchMessage(&msg);
   }

@@ -14,12 +14,82 @@ class CreateTaskScreen extends StatefulWidget {
 class _CreateTaskScreenState extends State<CreateTaskScreen> {
   late final TextEditingController _taskController;
   late final TextEditingController? _noteController;
+  late final TextEditingController? _dateController;
+  late final TextEditingController? _timeController;
+
+  DateTime? _selectedDate;
+  TimeOfDay? _selectedTime;
+
+  Future<void> _showDatePicker() async {
+    try {
+      final DateTime? pickedDate = await showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime(2020),
+        lastDate: DateTime(2030),
+        // locale: const Locale('en'),
+      );
+
+      if (pickedDate != null) {
+        setState(() {
+          _selectedDate = pickedDate;
+          _dateController?.text =
+              "${pickedDate.day.toString().padLeft(2, '0')}.${pickedDate.month.toString().padLeft(2, '0')}.${pickedDate.year}";
+          debugPrint(_selectedDate.toString());
+        });
+      }
+    } catch (e) {
+      debugPrint("Ошибка во время показа datePicker: $e");
+    }
+  }
+
+  Future<void> _showTimePicker(BuildContext context) async {
+    try {
+      final TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.now(),
+        initialEntryMode: TimePickerEntryMode.dial,
+        orientation: Orientation.portrait,
+        builder: (context, child) {
+          return Theme(
+            data: Theme.of(
+              context,
+            ).copyWith(materialTapTargetSize: MaterialTapTargetSize.shrinkWrap),
+            child: Directionality(
+              textDirection: TextDirection.ltr,
+              child: MediaQuery(
+                data: MediaQuery.of(
+                  context,
+                ).copyWith(alwaysUse24HourFormat: true),
+                child: child!,
+              ),
+            ),
+          );
+        },
+      );
+
+      if (pickedTime != null) {
+        // final formattedTime = pickedTime.format(context);
+        final formattedTime = MaterialLocalizations.of(
+          context,
+        ).formatTimeOfDay(pickedTime, alwaysUse24HourFormat: true);
+        setState(() {
+          _selectedTime = pickedTime;
+          _timeController?.text = formattedTime;
+        });
+      }
+    } catch (e) {
+      debugPrint('Ошибка во время показа datePicker: $e');
+    }
+  }
 
   @override
   void initState() {
     super.initState();
     _taskController = TextEditingController(text: widget.task?.task ?? '');
     _noteController = TextEditingController(text: widget.task?.note ?? '');
+    _dateController = TextEditingController();
+    _timeController = TextEditingController();
   }
 
   @override
@@ -70,6 +140,48 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
               ),
             ),
           ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  readOnly: true,
+                  controller: _dateController,
+                  decoration: InputDecoration(
+                    label: const Text('Дата'),
+                    hint: const Text('Выберите дату'),
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              IconButton(
+                onPressed: _showDatePicker,
+                icon: Icon(Icons.calendar_month),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  readOnly: true,
+                  controller: _timeController,
+                  decoration: InputDecoration(
+                    label: const Text('Время'),
+                    hint: const Text('Выберите время'),
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              IconButton(
+                onPressed: () => _showTimePicker(context),
+                icon: Icon(Icons.watch_later_outlined),
+              ),
+            ],
+          ),
           const SizedBox(height: 30),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -78,6 +190,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
               ),
             ),
             onPressed: () {
+              final now = DateTime.now();
               final text = _taskController.text;
               final note = _noteController?.text;
 
@@ -93,10 +206,21 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                 return;
               }
 
+              final combinedDateTime = DateTime(
+                _selectedDate?.year ?? now.year,
+                _selectedDate?.month ?? now.month,
+                _selectedDate?.day ?? now.day,
+                _selectedTime?.hour ?? now.hour,
+                _selectedTime?.minute ?? now.minute,
+              );
+
               final task = SaveTask(
                 task: text,
-                time: DateTime.now(),
+                dateTime: combinedDateTime,
                 note: note?.isEmpty == true ? null : note,
+                isDone: false,
+                hasDate: _selectedDate != null,
+                hasTime: _selectedTime != null,
               );
 
               Navigator.pop(context, task);

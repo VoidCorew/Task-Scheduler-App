@@ -11,13 +11,23 @@ Widget returnableTile(
   int index,
 ) {
   final trash = taskProvider.trashed[index];
+  final now = DateTime.now();
+  final time = trash.dateTime!;
+  final timeAsDateTime = DateTime(
+    now.year,
+    now.month,
+    now.day,
+    time.hour,
+    time.minute,
+  );
+
   if (trash.note == null) {
     if (Platform.isWindows) {
       return ListTile(
         leading: const Icon(Icons.task),
         title: Text(trash.task, style: TextStyle(fontFamily: 'Monsterrat')),
         subtitle: Text(
-          DateFormat('yyyy-MM-dd HH:mm').format(trash.time),
+          DateFormat('yyyy-MM-dd').format(trash.dateTime!),
           style: TextStyle(fontFamily: 'Monsterrat'),
         ),
         trailing: Row(
@@ -97,7 +107,7 @@ Widget returnableTile(
         leading: const Icon(Icons.task),
         title: Text(trash.task, style: TextStyle(fontFamily: 'Monsterrat')),
         subtitle: Text(
-          DateFormat('yyyy-MM-dd HH:mm').format(trash.time),
+          DateFormat('yyyy-MM-dd').format(trash.dateTime!),
           style: TextStyle(fontFamily: 'Monsterrat'),
         ),
       ),
@@ -108,7 +118,7 @@ Widget returnableTile(
       leading: const Icon(Icons.task),
       title: Text(trash.task, style: TextStyle(fontFamily: 'Monsterrat')),
       subtitle: Text(
-        DateFormat('yyyy-MM-dd HH:mm').format(trash.time),
+        DateFormat('yyyy-MM-dd').format(trash.dateTime!),
         style: TextStyle(fontFamily: 'Monsterrat'),
       ),
       children: <Widget>[
@@ -193,7 +203,7 @@ Widget returnableTile(
       leading: const Icon(Icons.task),
       title: Text(trash.task, style: TextStyle(fontFamily: 'Monsterrat')),
       subtitle: Text(
-        DateFormat('yyyy-MM-dd HH:mm').format(trash.time),
+        DateFormat('yyyy-MM-dd').format(trash.dateTime!),
         style: TextStyle(fontFamily: 'Monsterrat'),
       ),
       children: <Widget>[

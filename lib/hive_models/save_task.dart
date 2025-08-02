@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
 part 'save_task.g.dart';
@@ -8,7 +9,7 @@ class SaveTask extends HiveObject {
   String task;
 
   @HiveField(1)
-  DateTime time;
+  DateTime? dateTime;
 
   @HiveField(2)
   String? note;
@@ -16,10 +17,22 @@ class SaveTask extends HiveObject {
   @HiveField(3)
   bool? isDone;
 
+  @HiveField(4)
+  bool hasDate;
+
+  @HiveField(5)
+  bool hasTime;
+
+  @HiveField(6)
+  String origin;
+
   SaveTask({
     required this.task,
-    required this.time,
+    this.dateTime,
     this.note,
     this.isDone = false,
+    required this.hasDate,
+    required this.hasTime,
+    this.origin = 'tasks',
   });
 }
