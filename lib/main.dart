@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:path_provider/path_provider.dart';
@@ -10,6 +11,7 @@ import 'package:tasks_scheduler/providers/calendar_color_provider.dart';
 import 'package:tasks_scheduler/providers/task_provider.dart';
 import 'package:tasks_scheduler/providers/theme_provider.dart';
 import 'package:tasks_scheduler/screens/home_screen.dart';
+import 'package:tasks_scheduler/services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,6 +43,33 @@ void main() async {
       ),
     );
   }
+
+  await initNotifications();
+
+  Future<void> requestNotificationPermissions() async {
+    // Для iOS
+    final iosPlugin = flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin
+        >();
+    await iosPlugin?.requestPermissions(alert: true, badge: true, sound: true);
+
+    // Для macOS
+    final macPlugin = flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+          MacOSFlutterLocalNotificationsPlugin
+        >();
+    await macPlugin?.requestPermissions(alert: true, badge: true, sound: true);
+
+    // Для Android 13+ (API 33+)
+    final androidPlugin = flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    await androidPlugin?.requestNotificationsPermission();
+  }
+
+  await requestNotificationPermissions();
 
   runApp(
     MultiProvider(

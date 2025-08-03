@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -14,6 +15,7 @@ import 'package:tasks_scheduler/screens/calendar_screen.dart';
 import 'package:tasks_scheduler/screens/create_task_screen.dart';
 import 'package:tasks_scheduler/screens/settings_screen.dart';
 import 'package:tasks_scheduler/screens/trash_screen.dart';
+import 'package:tasks_scheduler/services/notification_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -101,6 +103,25 @@ class _HomeScreenState extends State<HomeScreen> {
                     if (task != null) {
                       taskProvider.addTask(task);
                     }
+                  },
+                ),
+                PopupMenuItem(
+                  child: const Text('Тест уведомления'),
+                  onTap: () async {
+                    await flutterLocalNotificationsPlugin.show(
+                      0,
+                      'Тестовое уведомление',
+                      'Если ты видишь это — всё работает',
+                      const NotificationDetails(
+                        android: AndroidNotificationDetails(
+                          'test_channel',
+                          'Test Notifications',
+                          channelDescription: 'Для проверки работы уведомлений',
+                          importance: Importance.max,
+                          priority: Priority.high,
+                        ),
+                      ),
+                    );
                   },
                 ),
               ],

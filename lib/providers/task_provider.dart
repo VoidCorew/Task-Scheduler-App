@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:tasks_scheduler/hive_models/save_task.dart';
+import 'package:tasks_scheduler/services/notification_service.dart';
 
 class TaskProvider extends ChangeNotifier {
   final List<SaveTask> _tasks = [];
@@ -37,6 +38,7 @@ class TaskProvider extends ChangeNotifier {
 
   // updated addTask
   Future<void> addTask(SaveTask task) async {
+    int key;
     // if (task.dateTime != null &&
     //     task.dateTime!.hour != 0 &&
     //     task.dateTime!.minute != 0) {
@@ -47,10 +49,10 @@ class TaskProvider extends ChangeNotifier {
     //   _unsorted.add(_unsortedBox.get(key)!);
     // }
     if (task.hasDate && task.hasTime) {
-      final key = await _taskBox.add(task);
+      key = await _taskBox.add(task);
       _tasks.add(_taskBox.get(key)!);
     } else {
-      final key = await _unsortedBox.add(task);
+      key = await _unsortedBox.add(task);
       final unsorted = _unsortedBox.get(key);
       // _unsorted.add(unsorted!);
       if (unsorted != null) {
@@ -58,6 +60,24 @@ class TaskProvider extends ChangeNotifier {
       }
     }
     notifyListeners();
+
+    if (task.hasDate && task.hasTime && task.dateTime != null) {
+      final scheduledTime = task.dateTime!.subtract(
+        const Duration(minutes: 10),
+      );
+      final now = DateTime.now();
+
+      // Проверяем, что уведомление в будущем
+      if (scheduledTime.isAfter(now)) {
+        await scheduleNotification(
+          id: key.hashCode,
+          title: 'Напоминание о задаче',
+          body: task.task,
+          scheduledDate: scheduledTime,
+        );
+        debugPrint("Уведомление запланировано на $scheduledTime");
+      }
+    }
   }
 
   Future<void> deleteTask(SaveTask task) async {

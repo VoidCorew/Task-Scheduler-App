@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:tasks_scheduler/hive_models/save_task.dart';
 // import 'package:tasks_scheduler/models/task.dart';
@@ -19,6 +20,8 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
 
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
+
+  String? _audioPath;
 
   Future<void> _showDatePicker() async {
     try {
@@ -77,9 +80,35 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
           _selectedTime = pickedTime;
           _timeController?.text = formattedTime;
         });
+      } else {
+        setState(() {
+          _selectedTime = null;
+        });
       }
     } catch (e) {
       debugPrint('Ошибка во время показа datePicker: $e');
+    }
+  }
+
+  Future<void> _pickAudioFile() async {
+    debugPrint('pickAudioFile вызван'); // ← эта строка
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['mp3', 'wav', 'ogg', 'm4a'],
+      );
+      debugPrint('FilePicker вернул: $result');
+      if (result != null && result.files.single.path != null) {
+        final filePath = result.files.single.path!;
+        setState(() {
+          _audioPath = filePath;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Аудио выбрано: ${filePath.split('/').last}')),
+        );
+      }
+    } catch (e, st) {
+      debugPrint('Ошибка pickAudioFile: $e\n$st');
     }
   }
 
@@ -148,8 +177,14 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                   readOnly: true,
                   controller: _dateController,
                   decoration: InputDecoration(
-                    label: const Text('Дата'),
-                    hint: const Text('Выберите дату'),
+                    label: const Text(
+                      'Дата',
+                      style: TextStyle(fontFamily: 'Monsterrat'),
+                    ),
+                    hint: const Text(
+                      'Выберите дату',
+                      style: TextStyle(fontFamily: 'Monsterrat'),
+                    ),
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -169,8 +204,14 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                   readOnly: true,
                   controller: _timeController,
                   decoration: InputDecoration(
-                    label: const Text('Время'),
-                    hint: const Text('Выберите время'),
+                    label: const Text(
+                      'Время',
+                      style: TextStyle(fontFamily: 'Monsterrat'),
+                    ),
+                    hint: const Text(
+                      'Выберите время',
+                      style: TextStyle(fontFamily: 'Monsterrat'),
+                    ),
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -181,6 +222,11 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                 icon: Icon(Icons.watch_later_outlined),
               ),
             ],
+          ),
+          const SizedBox(height: 10),
+          TextButton(
+            onPressed: _pickAudioFile,
+            child: const Text('Выбрать аудио файл'),
           ),
           const SizedBox(height: 30),
           ElevatedButton(
