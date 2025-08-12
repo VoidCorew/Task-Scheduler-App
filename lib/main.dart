@@ -16,6 +16,45 @@ import 'package:window_size/window_size.dart' as window;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:io' show Platform;
 
+final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+Future<void> initNotifications() async {
+  const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+  const iosSettings = DarwinInitializationSettings();
+  const macSettings = DarwinInitializationSettings();
+  const linuxSettings = LinuxInitializationSettings(
+    defaultActionName: 'Open notification',
+  );
+
+  const initializationSettings = InitializationSettings(
+    android: androidSettings,
+    iOS: iosSettings,
+    macOS: macSettings,
+    linux: linuxSettings,
+  );
+
+  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+
+  // Запрос разрешений
+  final iosPlugin = flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+        IOSFlutterLocalNotificationsPlugin
+      >();
+  await iosPlugin?.requestPermissions(alert: true, badge: true, sound: true);
+
+  final macPlugin = flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+        MacOSFlutterLocalNotificationsPlugin
+      >();
+  await macPlugin?.requestPermissions(alert: true, badge: true, sound: true);
+
+  final androidPlugin = flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin
+      >();
+  await androidPlugin?.requestNotificationsPermission();
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -57,31 +96,6 @@ void main() async {
   }
 
   await initNotifications();
-
-  Future<void> requestNotificationPermissions() async {
-    // Для iOS
-    final iosPlugin = flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-          IOSFlutterLocalNotificationsPlugin
-        >();
-    await iosPlugin?.requestPermissions(alert: true, badge: true, sound: true);
-
-    // Для macOS
-    final macPlugin = flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-          MacOSFlutterLocalNotificationsPlugin
-        >();
-    await macPlugin?.requestPermissions(alert: true, badge: true, sound: true);
-
-    // Для Android 13+ (API 33+)
-    final androidPlugin = flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin
-        >();
-    await androidPlugin?.requestNotificationsPermission();
-  }
-
-  await requestNotificationPermissions();
 
   runApp(
     MultiProvider(
