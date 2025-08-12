@@ -12,9 +12,21 @@ import 'package:tasks_scheduler/providers/task_provider.dart';
 import 'package:tasks_scheduler/providers/theme_provider.dart';
 import 'package:tasks_scheduler/screens/home_screen.dart';
 import 'package:tasks_scheduler/services/notification_service.dart';
+import 'package:window_size/window_size.dart' as window;
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:io' show Platform;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  if (!kIsWeb && Platform.isLinux) {
+    const double width = 500;
+    const double height = 800;
+
+    window.setWindowTitle('Task Scheduler');
+    window.setWindowMinSize(const Size(width, height));
+    window.setWindowMaxSize(const Size(width, height));
+  }
 
   await initializeDateFormatting('ru_RU', null);
 
